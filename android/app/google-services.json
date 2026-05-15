@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "522297217860",
+    "project_id": "e-kentongan-ac811",
+    "storage_bucket": "e-kentongan-ac811.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522297217860:android:57b5e50b02d36fa9d3bd11",
+        "android_client_info": {
+          "package_name": "com.penacode.e_kentongan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlydlQOFHzkjREAR2A-atp9pj99IV98U0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522297217860:android:b7252e78123fdc62d3bd11",
+        "android_client_info": {
+          "package_name": "com.penacode.e_kentongan.e_kentongan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlydlQOFHzkjREAR2A-atp9pj99IV98U0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
