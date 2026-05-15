@@ -83,28 +83,46 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 10),
             StreamBuilder<List<JadwalModel>>(
               stream: _firestoreService.getJadwal(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                var allJadwal = snapshot.data!;
+              builder: (context, jadwalSnapshot) {
+                if (!jadwalSnapshot.hasData) return const Center(child: CircularProgressIndicator());
+                var allJadwal = jadwalSnapshot.data!;
                 String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
                 var todayJadwal = allJadwal.where((j) => j.tanggal == today).toList();
 
                 if (todayJadwal.isEmpty) return const Text('Tidak ada jadwal untuk hari ini.');
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: todayJadwal.length,
-                  itemBuilder: (context, index) {
-                    var jadwal = todayJadwal[index];
-                    return Card(
-                      child: ListTile(
-                        title: Text(jadwal.namaWarga),
-                        subtitle: Text('${jadwal.jamMulai} - ${jadwal.jamSelesai} @ ${jadwal.posRonda}'),
-                        trailing: jadwal.userId == _currentUser?.uid
-                            ? ElevatedButton(onPressed: () => _checkIn(jadwal.id), child: const Text('Check-In'))
-                            : null,
-                      ),
+                return StreamBuilder<List<CheckInModel>>(
+                  stream: _firestoreService.getCheckIns(_currentUser!.uid),
+                  builder: (context, checkinSnapshot) {
+                    var checkins = checkinSnapshot.data ?? [];
+                    var checkedInJadwalIds = checkins.map((c) => c.jadwalId).toSet();
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: todayJadwal.length,
+                      itemBuilder: (context, index) {
+                        var jadwal = todayJadwal[index];
+                        bool isAlreadyCheckedIn = checkedInJadwalIds.contains(jadwal.id);
+
+                        return Card(
+                          child: ListTile(
+                            title: Text(jadwal.namaWarga),
+                            subtitle: Text('${jadwal.jamMulai} - ${jadwal.jamSelesai} @ ${jadwal.posRonda}'),
+                            trailing: jadwal.userId == _currentUser?.uid
+                                ? isAlreadyCheckedIn
+                                    ? const Chip(
+                                        label: Text('Sudah Absen', style: TextStyle(color: Colors.white)),
+                                        backgroundColor: Colors.green,
+                                      )
+                                    : ElevatedButton(
+                                        onPressed: () => _checkIn(jadwal.id),
+                                        child: const Text('Check-In'),
+                                      )
+                                : null,
+                          ),
+                        );
+                      },
                     );
                   },
                 );

@@ -24,8 +24,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: AppConstants.appName,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppConstants.primaryColor,
+          primary: AppConstants.primaryColor,
+          secondary: AppConstants.accentColor,
+          surface: AppConstants.backgroundColor,
+        ),
+        scaffoldBackgroundColor: AppConstants.backgroundColor,
         useMaterial3: true,
+        fontFamily: 'Roboto', // Defaulting to Roboto, common in Flutter
       ),
       home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,

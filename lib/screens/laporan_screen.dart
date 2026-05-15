@@ -5,6 +5,7 @@ import '../services/firestore_service.dart';
 import '../services/auth_service.dart';
 import '../models/laporan_model.dart';
 import '../models/user_model.dart';
+import '../utils/constants.dart';
 
 class LaporanScreen extends StatefulWidget {
   const LaporanScreen({super.key});
@@ -84,6 +85,15 @@ class _LaporanScreenState extends State<LaporanScreen> {
                     return ListTile(
                       title: Text(lapor.teks),
                       subtitle: Text('${lapor.namaWarga} - ${DateFormat('dd MMM yyyy HH:mm').format(lapor.timestamp)}'),
+                      trailing: (_currentUser?.role == AppConstants.roleKetua)
+                          ? IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                await _firestoreService.deleteLaporan(lapor.id);
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan Dihapus')));
+                              },
+                            )
+                          : null,
                     );
                   },
                 );
