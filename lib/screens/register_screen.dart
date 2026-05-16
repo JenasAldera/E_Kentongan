@@ -19,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _selectedRole = AppConstants.roleWarga;
   final AuthService _authService = AuthService();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
@@ -50,14 +51,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
       appBar: AppBar(
-        title: const Text('Daftar Akun', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppConstants.primaryColor,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: const BackButton(color: AppConstants.primaryColor),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.notifications_active, size: 20, color: AppConstants.accentColor),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'E-Kentongan',
+              style: TextStyle(color: AppConstants.primaryColor, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outlined, color: AppConstants.mutedTextColor),
+            onPressed: () {},
+          )
+        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
           children: [
+            const Text(
+              'Daftar Akun Baru',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppConstants.textColor),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Bergabunglah dengan komunitas keamanan lingkungan digital untuk RT yang lebih aman dan teratur.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: AppConstants.mutedTextColor),
+            ),
+            const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -76,84 +111,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Nama Lengkap', style: TextStyle(fontWeight: FontWeight.w500)),
+                    _buildInputField('Nama Lengkap', 'Contoh: Budi Santoso', _namaController, Icons.person_outlined),
+                    const SizedBox(height: 16),
+                    _buildInputField('Email', 'budi@email.com', _emailController, Icons.email_outlined),
+                    const SizedBox(height: 16),
+                    _buildInputField('Nomor HP', '0812xxxx', _noHpController, Icons.phone_outlined),
+                    const SizedBox(height: 16),
+                    _buildInputField('Alamat', 'Jl. Keamanan No. 12, RT 05', _alamatController, Icons.location_on_outlined),
+                    const SizedBox(height: 16),
+                    const Text('Pilihan Role', style: TextStyle(fontWeight: FontWeight.w500)),
                     const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _namaController,
-                      decoration: InputDecoration(
-                        hintText: 'Masukkan nama lengkap',
-                        filled: true,
-                        fillColor: AppConstants.backgroundColor,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
-                      validator: (value) => value!.isEmpty ? 'Nama tidak boleh kosong' : null,
+                    Row(
+                      children: [
+                        Expanded(child: _buildRoleCard(AppConstants.roleWarga, 'Warga', Icons.group_outlined)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildRoleCard(AppConstants.roleKetua, 'Ketua RT', Icons.assignment_ind_outlined)),
+                      ],
                     ),
                     const SizedBox(height: 16),
-                    const Text('Email', style: TextStyle(fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        hintText: 'contoh@email.com',
-                        filled: true,
-                        fillColor: AppConstants.backgroundColor,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
-                      validator: (value) => value!.isEmpty ? 'Email tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Password', style: TextStyle(fontWeight: FontWeight.w500)),
+                    const Text('Kata Sandi', style: TextStyle(fontWeight: FontWeight.w500)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         hintText: '••••••••',
+                        prefixIcon: const Icon(Icons.lock_outlined),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        ),
                         filled: true,
                         fillColor: AppConstants.backgroundColor,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                       validator: (value) => value!.length < 6 ? 'Password minimal 6 karakter' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('No HP', style: TextStyle(fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _noHpController,
-                      decoration: InputDecoration(
-                        hintText: '0812xxxxxxxx',
-                        filled: true,
-                        fillColor: AppConstants.backgroundColor,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Alamat RT/RW', style: TextStyle(fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _alamatController,
-                      decoration: InputDecoration(
-                        hintText: 'Contoh: RT 01 / RW 02',
-                        filled: true,
-                        fillColor: AppConstants.backgroundColor,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Role', style: TextStyle(fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _selectedRole,
-                      items: const [
-                        DropdownMenuItem(value: AppConstants.roleWarga, child: Text('Warga')),
-                        DropdownMenuItem(value: AppConstants.roleKetua, child: Text('Ketua RT')),
-                      ],
-                      onChanged: (val) => setState(() => _selectedRole = val!),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppConstants.backgroundColor,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
                     ),
                     const SizedBox(height: 32),
                     SizedBox(
@@ -168,11 +163,102 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         child: _isLoading
                             ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text('Daftar Akun', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('Daftar ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  Icon(Icons.person_add_alt_1_outlined),
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: RichText(
+                          text: const TextSpan(
+                            text: 'Sudah punya akun? ',
+                            style: TextStyle(color: AppConstants.mutedTextColor),
+                            children: [
+                              TextSpan(
+                                text: 'Masuk Sekarang',
+                                style: TextStyle(color: AppConstants.primaryColor, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.verified_user_outlined, size: 16, color: AppConstants.mutedTextColor),
+                const SizedBox(width: 4),
+                const Text('Data terenkripsi dan aman', style: TextStyle(fontSize: 12, color: AppConstants.mutedTextColor)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputField(String label, String hint, TextEditingController controller, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(icon),
+            filled: true,
+            fillColor: AppConstants.backgroundColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          validator: (value) => value!.isEmpty ? '$label tidak boleh kosong' : null,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoleCard(String role, String label, IconData icon) {
+    bool isSelected = _selectedRole == role;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedRole = role),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : AppConstants.backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppConstants.primaryColor : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: AppConstants.primaryColor.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]
+              : null,
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isSelected ? AppConstants.primaryColor : AppConstants.mutedTextColor),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppConstants.primaryColor : AppConstants.mutedTextColor,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],

@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
           child: Column(
             children: [
-              // Placeholder for Logo
+              // Logo App
               Container(
                 width: 100,
                 height: 100,
@@ -60,7 +60,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.notifications_active, size: 50, color: AppConstants.accentColor),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    'assets/e-kentongan logo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.notifications_active,
+                      size: 50,
+                      color: AppConstants.accentColor,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -167,6 +178,27 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: _isLoading
                               ? const CircularProgressIndicator(color: Colors.white)
                               : const Text('Masuk →', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Center(child: Text('ATAU', style: TextStyle(fontSize: 12, color: AppConstants.mutedTextColor))),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Fitur login dengan Google belum tersedia untuk saat ini.'))
+                            );
+                          },
+                          icon: const Icon(Icons.g_mobiledata, size: 30),
+                          label: const Text('Masuk dengan Google'),
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                            side: const BorderSide(color: AppConstants.primaryColor),
+                            foregroundColor: AppConstants.primaryColor,
+                          ),
                         ),
                       ),
                     ],

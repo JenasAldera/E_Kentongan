@@ -19,6 +19,7 @@ class _LaporanScreenState extends State<LaporanScreen> {
   final AuthService _authService = AuthService();
   final _teksController = TextEditingController();
   UserModel? _currentUser;
+  bool _isSending = false;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _LaporanScreenState extends State<LaporanScreen> {
 
   void _kirimLaporan() async {
     if (_teksController.text.isNotEmpty && _currentUser != null) {
+      setState(() => _isSending = true);
       LaporanModel laporan = LaporanModel(
         id: '',
         userId: _currentUser!.uid,
@@ -49,6 +51,7 @@ class _LaporanScreenState extends State<LaporanScreen> {
       );
       await _firestoreService.addLaporan(laporan);
       _teksController.clear();
+      setState(() => _isSending = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan Terkirim')));
       }
@@ -59,78 +62,140 @@ class _LaporanScreenState extends State<LaporanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
-      appBar: AppBar(
-        title: const Text('Laporan Kejadian', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppConstants.primaryColor,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20.0),
-            color: Colors.white,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _teksController,
-                    decoration: InputDecoration(
-                      hintText: 'Tulis laporan kejadian...',
-                      filled: true,
-                      fillColor: AppConstants.backgroundColor,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                CircleAvatar(
-                  backgroundColor: AppConstants.primaryColor,
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: _kirimLaporan,
-                  ),
-                ),
-              ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildNewReportCard(),
+            const SizedBox(height: 24),
+            const Text(
+              'Daftar Laporan Terkini',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppConstants.textColor),
             ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: StreamBuilder<List<LaporanModel>>(
+            const SizedBox(height: 12),
+            StreamBuilder<List<LaporanModel>>(
               stream: _firestoreService.getLaporan(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                 var laporanList = snapshot.data!;
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: laporanList.length,
                   itemBuilder: (context, index) {
                     var lapor = laporanList[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        title: Text(lapor.teks, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text('${lapor.namaWarga} - ${DateFormat('dd MMM yyyy HH:mm').format(lapor.timestamp)}'),
-                        trailing: (_currentUser?.role == AppConstants.roleKetua)
-                            ? IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                onPressed: () async {
-                                  await _firestoreService.deleteLaporan(lapor.id);
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan Dihapus')));
-                                  }
-                                },
-                              )
-                            : null,
-                      ),
-                    );
+                    return _buildReportItem(lapor);
                   },
                 );
               },
             ),
-          )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewReportCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
         ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Buat Laporan Baru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'Laporkan kejadian atau aktivitas mencurigakan di lingkungan Anda.',
+            style: TextStyle(fontSize: 13, color: AppConstants.mutedTextColor),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _teksController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: 'Ceritakan apa yang terjadi...',
+              hintStyle: const TextStyle(fontSize: 14, color: AppConstants.mutedTextColor),
+              filled: true,
+              fillColor: AppConstants.backgroundColor,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 45,
+            child: ElevatedButton.icon(
+              onPressed: _isSending ? null : _kirimLaporan,
+              icon: _isSending 
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Icon(Icons.send_rounded, size: 18),
+              label: const Text('Kirim Laporan', style: TextStyle(fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppConstants.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportItem(LaporanModel laporan) {
+    bool isKetua = _currentUser?.role == AppConstants.roleKetua;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  laporan.namaWarga,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppConstants.primaryColor),
+                ),
+                Text(
+                  DateFormat('dd MMM, HH:mm').format(laporan.timestamp),
+                  style: const TextStyle(fontSize: 10, color: AppConstants.mutedTextColor),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              laporan.teks,
+              style: const TextStyle(fontSize: 14, color: AppConstants.textColor),
+            ),
+            if (isKetua) ...[
+              const Divider(height: 24),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => _firestoreService.deleteLaporan(laporan.id),
+                  icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                  label: const Text('Hapus', style: TextStyle(color: Colors.red, fontSize: 12)),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

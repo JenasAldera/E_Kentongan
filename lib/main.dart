@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: AppConstants.backgroundColor,
         useMaterial3: true,
-        fontFamily: 'Roboto', // Defaulting to Roboto, common in Flutter
+        fontFamily: 'Roboto',
       ),
       home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,

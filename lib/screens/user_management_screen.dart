@@ -23,29 +23,38 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   void _fetchUsers() async {
     var users = await _firestoreService.getAllUsers();
-    setState(() {
-      _users = users;
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _users = users;
+        _isLoading = false;
+      });
+    }
   }
 
   void _confirmDelete(UserModel user) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus Warga'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Hapus Warga', style: TextStyle(fontWeight: FontWeight.bold)),
         content: Text('Apakah Anda yakin ingin menghapus ${user.nama} dari sistem?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
             onPressed: () async {
               await _firestoreService.deleteUser(user.uid);
               Navigator.pop(context);
               _fetchUsers();
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User berhasil dihapus')));
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User berhasil dihapus')));
+              }
             },
-            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
+            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -59,11 +68,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ubah Role'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Ubah Role', style: TextStyle(fontWeight: FontWeight.bold)),
         content: Text('Ubah role ${user.nama} menjadi $roleName?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppConstants.primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
             onPressed: () async {
               await _firestoreService.updateUserRole(user.uid, newRole);
               Navigator.pop(context);
@@ -80,55 +95,74 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
-      appBar: AppBar(
-        title: const Text('Manajemen Warga', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppConstants.primaryColor,
-        elevation: 0,
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              itemCount: _users.length,
-              itemBuilder: (context, index) {
-                final user = _users[index];
-                return Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12),
-                    leading: CircleAvatar(
-                      radius: 25,
-                      backgroundColor: user.role == AppConstants.roleKetua ? AppConstants.primaryColor : AppConstants.accentColor,
-                      child: Text(
-                        user.nama.isNotEmpty ? user.nama[0].toUpperCase() : '?', 
-                        style: TextStyle(color: user.role == AppConstants.roleKetua ? Colors.white : AppConstants.primaryColor, fontWeight: FontWeight.bold)
-                      ),
-                    ),
-                    title: Text(user.nama, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text('Role: ${user.role == AppConstants.roleKetua ? 'Ketua RT' : 'Warga'}'),
-                        Text('HP: ${user.noHp}'),
-                        Text('Alamat: ${user.alamat}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                      ],
-                    ),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == 'delete') _confirmDelete(user);
-                        if (value == 'role') _changeRole(user);
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(value: 'role', child: Text('Ubah Role')),
-                        const PopupMenuItem(value: 'delete', child: Text('Hapus Warga')),
-                      ],
-                    ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Manajemen Warga',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppConstants.textColor),
                   ),
-                );
-              },
+                  const Text(
+                    'Kelola akun dan peran warga dalam sistem E-Kentongan.',
+                    style: TextStyle(fontSize: 14, color: AppConstants.mutedTextColor),
+                  ),
+                  const SizedBox(height: 24),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _users.length,
+                    itemBuilder: (context, index) {
+                      final user = _users[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(12),
+                          leading: CircleAvatar(
+                            radius: 25,
+                            backgroundColor: user.role == AppConstants.roleKetua ? AppConstants.primaryColor : AppConstants.accentColor,
+                            child: Text(
+                              user.nama.isNotEmpty ? user.nama[0].toUpperCase() : '?', 
+                              style: TextStyle(
+                                color: user.role == AppConstants.roleKetua ? Colors.white : AppConstants.primaryColor, 
+                                fontWeight: FontWeight.bold
+                              )
+                            ),
+                          ),
+                          title: Text(user.nama, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text('Role: ${user.role == AppConstants.roleKetua ? 'Ketua RT' : 'Warga'}', style: const TextStyle(fontSize: 12)),
+                              Text('HP: ${user.noHp}', style: const TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                          trailing: PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, color: AppConstants.mutedTextColor),
+                            onSelected: (value) {
+                              if (value == 'delete') _confirmDelete(user);
+                              if (value == 'role') _changeRole(user);
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(value: 'role', child: Text('Ubah Role')),
+                              const PopupMenuItem(value: 'delete', child: Text('Hapus Warga')),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
     );
   }
