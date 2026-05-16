@@ -30,9 +30,11 @@ class _LaporanScreenState extends State<LaporanScreen> {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       var data = await _authService.getUserData(user.uid);
-      setState(() {
-        _currentUser = data;
-      });
+      if (mounted) {
+        setState(() {
+          _currentUser = data;
+        });
+      }
     }
   }
 
@@ -47,31 +49,51 @@ class _LaporanScreenState extends State<LaporanScreen> {
       );
       await _firestoreService.addLaporan(laporan);
       _teksController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan Terkirim')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan Terkirim')));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Laporan Kejadian')),
+      backgroundColor: AppConstants.backgroundColor,
+      appBar: AppBar(
+        title: const Text('Laporan Kejadian', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: AppConstants.primaryColor,
+        elevation: 0,
+      ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          Container(
+            padding: const EdgeInsets.all(20.0),
+            color: Colors.white,
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _teksController,
-                    decoration: const InputDecoration(hintText: 'Tulis laporan kejadian...'),
+                    decoration: InputDecoration(
+                      hintText: 'Tulis laporan kejadian...',
+                      filled: true,
+                      fillColor: AppConstants.backgroundColor,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
                   ),
                 ),
-                IconButton(icon: const Icon(Icons.send), onPressed: _kirimLaporan),
+                const SizedBox(width: 12),
+                CircleAvatar(
+                  backgroundColor: AppConstants.primaryColor,
+                  child: IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    onPressed: _kirimLaporan,
+                  ),
+                ),
               ],
             ),
           ),
-          const Divider(),
+          const SizedBox(height: 10),
           Expanded(
             child: StreamBuilder<List<LaporanModel>>(
               stream: _firestoreService.getLaporan(),
@@ -79,21 +101,29 @@ class _LaporanScreenState extends State<LaporanScreen> {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                 var laporanList = snapshot.data!;
                 return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: laporanList.length,
                   itemBuilder: (context, index) {
                     var lapor = laporanList[index];
-                    return ListTile(
-                      title: Text(lapor.teks),
-                      subtitle: Text('${lapor.namaWarga} - ${DateFormat('dd MMM yyyy HH:mm').format(lapor.timestamp)}'),
-                      trailing: (_currentUser?.role == AppConstants.roleKetua)
-                          ? IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () async {
-                                await _firestoreService.deleteLaporan(lapor.id);
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan Dihapus')));
-                              },
-                            )
-                          : null,
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(16),
+                        title: Text(lapor.teks, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text('${lapor.namaWarga} - ${DateFormat('dd MMM yyyy HH:mm').format(lapor.timestamp)}'),
+                        trailing: (_currentUser?.role == AppConstants.roleKetua)
+                            ? IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                onPressed: () async {
+                                  await _firestoreService.deleteLaporan(lapor.id);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan Dihapus')));
+                                  }
+                                },
+                              )
+                            : null,
+                      ),
                     );
                   },
                 );

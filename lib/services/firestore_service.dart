@@ -56,4 +56,13 @@ class FirestoreService {
   Future<void> deleteLaporan(String id) {
     return _db.collection('laporan').doc(id).delete();
   }
+
+  // USERS MANAGEMENT
+  Future<void> deleteUser(String uid) {
+    return _db.collection('users').doc(uid).delete();
+  }
+
+  Future<void> updateUserRole(String uid, String newRole) {
+    return _db.collection('users').doc(uid).update({'role': newRole});
+  }
 }

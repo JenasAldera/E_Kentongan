@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 class AppConstants {
   static const String appName = 'E-Kentongan';
   
-  static const Color primaryColor = Colors.teal;
-  static const Color accentColor = Colors.orangeAccent;
-  static const Color backgroundColor = Color(0xFFF5F5F5);
+  static const Color primaryColor = Color(0xFF8D6E63); // Coklat Muda (Brown 400)
+  static const Color accentColor = Color(0xFFD7CCC8); // Coklat Sangat Muda (Brown 100)
+  static const Color backgroundColor = Color(0xFFEFEBE9); // Background Coklat (Brown 50)
   static const Color mutedTextColor = Color(0xFF757575);
 
   static const String roleWarga = 'warga';

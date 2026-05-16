@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../services/firestore_service.dart';
 import '../models/jadwal_model.dart';
 import '../models/user_model.dart';
+import '../utils/constants.dart';
 
 class KelolaJadwalScreen extends StatefulWidget {
   const KelolaJadwalScreen({super.key});
@@ -23,9 +24,11 @@ class _KelolaJadwalScreenState extends State<KelolaJadwalScreen> {
 
   void _fetchUsers() async {
     var users = await _firestoreService.getAllUsers();
-    setState(() {
-      _allUsers = users;
-    });
+    if (mounted) {
+      setState(() {
+        _allUsers = users;
+      });
+    }
   }
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
@@ -35,7 +38,7 @@ class _KelolaJadwalScreenState extends State<KelolaJadwalScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         controller.text = DateFormat('yyyy-MM-dd').format(picked);
       });
@@ -47,7 +50,7 @@ class _KelolaJadwalScreenState extends State<KelolaJadwalScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         controller.text = picked.format(context);
       });
@@ -71,77 +74,110 @@ class _KelolaJadwalScreenState extends State<KelolaJadwalScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(jadwal == null ? 'Tambah Jadwal' : 'Edit Jadwal'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(jadwal == null ? 'Tambah Jadwal' : 'Edit Jadwal', style: const TextStyle(fontWeight: FontWeight.bold)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text('Tanggal', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
                 TextField(
                   controller: tanggalController,
                   readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Tanggal',
-                    suffixIcon: Icon(Icons.calendar_today),
+                  decoration: InputDecoration(
+                    hintText: 'Pilih Tanggal',
+                    suffixIcon: const Icon(Icons.calendar_today),
+                    filled: true,
+                    fillColor: AppConstants.backgroundColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                   onTap: () async {
                     await _selectDate(context, tanggalController);
                     setDialogState(() {});
                   },
                 ),
+                const SizedBox(height: 16),
+                const Text('Jam Mulai', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
                 TextField(
                   controller: jamMulaiController,
                   readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Jam Mulai',
-                    suffixIcon: Icon(Icons.access_time),
+                  decoration: InputDecoration(
+                    hintText: 'Pilih Jam',
+                    suffixIcon: const Icon(Icons.access_time),
+                    filled: true,
+                    fillColor: AppConstants.backgroundColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                   onTap: () async {
                     await _selectTime(context, jamMulaiController);
                     setDialogState(() {});
                   },
                 ),
+                const SizedBox(height: 16),
+                const Text('Jam Selesai', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
                 TextField(
                   controller: jamSelesaiController,
                   readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Jam Selesai',
-                    suffixIcon: Icon(Icons.access_time),
+                  decoration: InputDecoration(
+                    hintText: 'Pilih Jam',
+                    suffixIcon: const Icon(Icons.access_time),
+                    filled: true,
+                    fillColor: AppConstants.backgroundColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                   onTap: () async {
                     await _selectTime(context, jamSelesaiController);
                     setDialogState(() {});
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
+                const Text('Pilih Warga', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
                 DropdownButtonFormField<UserModel>(
                   value: selectedUser,
-                  hint: const Text('Pilih Warga'),
                   items: _allUsers.map((user) {
-                    return DropdownMenuItem(
-                      value: user,
-                      child: Text(user.nama),
-                    );
+                    return DropdownMenuItem(value: user, child: Text(user.nama));
                   }).toList(),
                   onChanged: (val) {
                     setDialogState(() {
                       selectedUser = val;
                     });
                   },
-                  decoration: const InputDecoration(labelText: 'Petugas Ronda'),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppConstants.backgroundColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
                 ),
-                TextField(controller: posRondaController, decoration: const InputDecoration(labelText: 'Pos Ronda')),
+                const SizedBox(height: 16),
+                const Text('Pos Ronda', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: posRondaController,
+                  decoration: InputDecoration(
+                    hintText: 'Contoh: Pos RT 01',
+                    filled: true,
+                    fillColor: AppConstants.backgroundColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
               ],
             ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppConstants.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () async {
-                if (selectedUser == null || tanggalController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lengkapi data terlebih dahulu!')));
-                  return;
-                }
-
+                if (selectedUser == null || tanggalController.text.isEmpty) return;
                 JadwalModel newJadwal = JadwalModel(
                   id: jadwal?.id ?? '',
                   tanggal: tanggalController.text,
@@ -151,13 +187,12 @@ class _KelolaJadwalScreenState extends State<KelolaJadwalScreen> {
                   userId: selectedUser!.uid,
                   posRonda: posRondaController.text,
                 );
-
                 if (jadwal == null) {
                   await _firestoreService.addJadwal(newJadwal);
                 } else {
                   await _firestoreService.updateJadwal(newJadwal);
                 }
-                Navigator.pop(context);
+                if (mounted) Navigator.pop(context);
               },
               child: const Text('Simpan'),
             ),
@@ -170,25 +205,36 @@ class _KelolaJadwalScreenState extends State<KelolaJadwalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kelola Jadwal Ronda')),
+      backgroundColor: AppConstants.backgroundColor,
+      appBar: AppBar(
+        title: const Text('Kelola Jadwal', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: AppConstants.primaryColor,
+        elevation: 0,
+      ),
       body: StreamBuilder<List<JadwalModel>>(
         stream: _firestoreService.getJadwal(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
           var listJadwal = snapshot.data!;
           return ListView.builder(
+            padding: const EdgeInsets.all(16),
             itemCount: listJadwal.length,
             itemBuilder: (context, index) {
               var jadwal = listJadwal[index];
-              return ListTile(
-                title: Text('${jadwal.tanggal} - ${jadwal.namaWarga}'),
-                subtitle: Text('${jadwal.jamMulai} - ${jadwal.jamSelesai} @ ${jadwal.posRonda}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _showJadwalDialog(jadwal: jadwal)),
-                    IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _firestoreService.deleteJadwal(jadwal.id)),
-                  ],
+              return Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  title: Text('${jadwal.tanggal} - ${jadwal.namaWarga}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('${jadwal.jamMulai} - ${jadwal.jamSelesai} @ ${jadwal.posRonda}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(icon: const Icon(Icons.edit_outlined, color: Colors.blue), onPressed: () => _showJadwalDialog(jadwal: jadwal)),
+                      IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () => _firestoreService.deleteJadwal(jadwal.id)),
+                    ],
+                  ),
                 ),
               );
             },
@@ -196,8 +242,9 @@ class _KelolaJadwalScreenState extends State<KelolaJadwalScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppConstants.primaryColor,
         onPressed: () => _showJadwalDialog(),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

@@ -169,21 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               : const Text('Masuk →', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      const Center(child: Text('ATAU', style: TextStyle(fontSize: 12, color: AppConstants.mutedTextColor))),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: OutlinedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.g_mobiledata, size: 30),
-                          label: const Text('Masuk dengan Google'),
-                          style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -204,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 48),
               const Text(
-                '© 2024 E-Kentongan. Sistem Keamanan Lingkungan Digital.',
+                '© 2026 E-Kentongan. Sistem Keamanan Lingkungan Digital.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 10, color: AppConstants.mutedTextColor),
               ),
